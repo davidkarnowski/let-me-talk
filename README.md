@@ -1,5 +1,15 @@
 # LetMeTalk
 
+> [!IMPORTANT]
+> ## Works only with Claude Code's tap voice mode
+>
+> Run **`/voice tap`** in Claude Code before using LetMeTalk. **Click** the headset button once to start
+> recording, speak, then **click** it again to stop.
+>
+> **Hold mode (`/voice hold`) does not work and can't be made to work.** The headset's button works by shorting
+> its own microphone line, so the mic records silence for as long as the button is held down.
+> [Why hold-to-talk can't work](#why-hold-to-talk-cant-work) explains this in detail.
+
 Use the inline button on a wired 3.5 mm headset as a **push-to-talk key for Claude Code voice mode**, instead of
 letting it open Apple Music.
 
