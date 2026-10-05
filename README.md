@@ -25,7 +25,9 @@ the rest.
 
        ./build.sh --install
 
-   A mic icon appears in the menu bar. Turn on **Open at Login** in its menu so it's always running.
+   It needs the Xcode command-line tools (`xcode-select --install`). It signs with your Developer ID certificate if
+   you have one, and otherwise ad-hoc, which is fine for running on your own Mac. A mic icon appears in the menu
+   bar. Turn on **Open at Login** in its menu so it's always running.
 
 2. **Switch Claude Code's voice mode to tap.** In any Claude Code session:
 
@@ -128,7 +130,7 @@ click itself is lost.
 | **Headset Button → <key>** | On/off. Off removes the remap and gives the button back to the system, so Music behavior returns. |
 | **Choose Key…** | Opens a small window; press the key the button should become. Any single key works, including a modifier on its own (for example Right Option). |
 | **Open at Login** | Registers the app with macOS Login Items through `SMAppService`. |
-| **Quit LetMeTalk** | Removes the remap and quits. |
+| **Quit LetMeTalk** | Removes the remap and quits. Quitting with `kill`/`pkill` does too. |
 
 ### Menu-bar icon
 
@@ -154,6 +156,13 @@ click itself is lost.
 
 ### Limitations
 
+- **A crash or Force Quit leaves the remap in place.** The button keeps acting as the chosen key until you relaunch
+  the app and quit it, unplug and replug the headset, or run the clear command under
+  [Useful commands](#useful-commands).
+- **Keep clicks short.** A click held longer than the key-repeat delay (about half a second) sends repeats, which tap
+  mode can read as extra presses.
+- **Choose a harmless key.** Return, Delete or Esc are allowed, but a stray click would then send, erase or cancel
+  in whatever app is in front.
 - **One key, not a combination.** The HID remap maps one usage to one usage, so ⌥Space and the like aren't possible.
 - **Global.** The key goes to whichever app is in front. Click the button only when the Claude Code window is focused,
   or a space gets typed somewhere else.
@@ -161,6 +170,12 @@ click itself is lost.
   for volume (`0xE9` / `0xEA`) isn't remapped; those keep their normal volume function.
 - **Built-in 3.5 mm jack only.** USB and Bluetooth headsets show up as different HID services (transport `USB` or
   `Bluetooth`) and are deliberately not matched.
+
+### Uninstall
+
+1. Turn off **Open at Login** in the menu, then choose **Quit LetMeTalk**. This removes the remap.
+2. Delete `/Applications/LetMeTalk.app`.
+3. Optionally, remove its settings: `defaults delete app.letmetalk.LetMeTalk`.
 
 ---
 
@@ -175,6 +190,7 @@ click itself is lost.
 | First or last word missing | You were speaking during a click, when the mic is shorted | Pause briefly after the first click and before the second. |
 | Icon shows `mic.slash` with the headset plugged in | The headset isn't detected as a remote-capable headset (for example a 3-pole plug, or a CTIA/OMTP wiring mismatch) | Run the `hidutil list` command below. |
 | Need the button back right now | | Quit the app, or run the clear command below. |
+| Button still types a key after the app crashed | The remap outlives a crash or Force Quit | Run the clear command below, or unplug and replug the headset. |
 
 ### Useful commands
 
@@ -216,7 +232,7 @@ listen-only probes on a Mac using its built-in headphone jack.
 | Synthesized Space from an event tap | One key-down with **no auto-repeat** (macOS doesn't repeat synthesized keys), so the terminal saw a single space. Approach rejected. |
 | `UserKeyMapping` remap | **No** media-key events at all. Real Space down, then auto-repeat every ~83 ms after a ~500 ms delay, then up. Music stayed closed. |
 | Mic level during holds | About −27 dBFS speaking before a hold, **−120 dBFS** (exact zero) for the entire hold (two holds, 4.8 s and 3.5 s), speech back immediately after release. |
-| `/voice tap` | Click, speak, click: transcription works (confirmed by the user). |
+| `/voice tap` | Click, speak, click: transcription works (confirmed in use). |
 
 ---
 
@@ -233,8 +249,8 @@ listen-only probes on a Mac using its built-in headphone jack.
 
 ### Build and signing
 
-- `./build.sh` signs with the first `Developer ID Application` identity in the keychain. Override it with
-  `SIGN_IDENTITY="…" ./build.sh`.
+- `./build.sh` signs with the first `Developer ID Application` identity in the keychain, or ad-hoc (`-`) if there
+  is none. Override it with `SIGN_IDENTITY="…" ./build.sh`. It builds for the current Mac's architecture.
 - `codesign --timestamp` contacts Apple's timestamp server. If a build hangs at the `codesign` step, it's waiting on
   that server or on a keychain access prompt on the screen. Check for a dialog before killing it.
 - Signing with a stable identity keeps the app's identity constant across rebuilds, which keeps Login Items stable.

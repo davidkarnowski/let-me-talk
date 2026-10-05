@@ -20,14 +20,17 @@ fi
 # session links, and common credential shapes.
 generic='/Users/[A-Za-z0-9._-]+|/home/[A-Za-z0-9._-]+|\b([0-9]{1,3}\.){3}[0-9]{1,3}\b|Claude-Session|claude\.ai/code/session|-----BEGIN [A-Z ]*PRIVATE KEY|\bgh[pousr]_[A-Za-z0-9]{20,}|\bsk-ant-[A-Za-z0-9_-]{10,}|\bAKIA[0-9A-Z]{16}\b'
 # Machine types: development notes must not describe the hardware they ran on.
-machine='MacBook ?(Air|Pro)?|Mac ?mini|iMac|Mac ?Studio|Mac ?Pro|Apple[ -]silicon|\bM[1-9] ?(Pro|Max|Ultra)?\b|ThinkPad|Surface ?(Pro|Laptop)'
+models='MacBook ?(Air|Pro)?|Mac ?mini|iMac|Mac ?Studio|Mac ?Pro|Apple[ -]silicon|ThinkPad|Surface ?(Pro|Laptop)'   # any case
+chips='\bM[1-9] ?(Pro|Max|Ultra)?\b'                                                                               # exact case
 email='[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'
 noreply='noreply@anthropic\.com|@users\.noreply\.github\.com'
 
 fail=0
-for f in $files; do
+# One path per line, so names with spaces stay whole.
+while IFS= read -r f; do
+  [ -n "$f" ] || continue
   case "$f" in "$hooks"*) continue ;; esac
-  hits=$(show "$f" | grep -nEi "$generic" ; show "$f" | grep -nE "$machine" ; show "$f" | grep -noEi "$email" | grep -vEi "$noreply")
+  hits=$(show "$f" | grep -nEi "$generic" ; show "$f" | grep -nEi "$models" ; show "$f" | grep -nE "$chips" ; show "$f" | grep -noEi "$email" | grep -vEi "$noreply")
   # LICENSE carries the deliberate author credit, so personal terms are allowed there.
   if [ -s "$gitdir/info/privacy-denylist" ] && [ "$f" != LICENSE ]; then
     hits="$hits
@@ -39,5 +42,7 @@ $(show "$f" | grep -nFi -f "$gitdir/info/privacy-denylist")"
     echo "$hits" | sed 's/^/  /' >&2
     fail=1
   fi
-done
+done <<FILES
+$files
+FILES
 [ $fail -eq 0 ] || { echo "privacy-gate: refusing. Remove the lines above, or add an exception deliberately." >&2; exit 1; }

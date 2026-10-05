@@ -56,10 +56,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var headsetFound = false
 
     private var enabled = UserDefaults.standard.object(forKey: "enabled") as? Bool ?? true
-    private var keyCode = UInt16(UserDefaults.standard.object(forKey: "keyCode") as? Int ?? 49)
+    private var keyCode = UInt16(exactly: UserDefaults.standard.object(forKey: "keyCode") as? Int ?? 49) ?? 49
     private var keyName = UserDefaults.standard.string(forKey: "keyName") ?? "Space"
 
+    private var sigterm: DispatchSourceSignal?
+
     func applicationDidFinishLaunching(_ note: Notification) {
+        // `kill`/`pkill` send SIGTERM, which would skip applicationWillTerminate and leave the remap behind.
+        signal(SIGTERM, SIG_IGN)
+        sigterm = DispatchSource.makeSignalSource(signal: SIGTERM, queue: .main)
+        sigterm?.setEventHandler { NSApp.terminate(nil) }
+        sigterm?.resume()
+
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         buildMenu()
         watchForHeadsets()

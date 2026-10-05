@@ -4,12 +4,19 @@ set -euo pipefail
 cd "${0:A:h}"
 
 APP=build/LetMeTalk.app
-IDENTITY="${SIGN_IDENTITY:-Developer ID Application}"
+# Sign with your Developer ID if you have one; otherwise ad-hoc ("-"), which is fine for your own Mac.
+if [[ -n "${SIGN_IDENTITY:-}" ]]; then
+    IDENTITY="$SIGN_IDENTITY"
+elif security find-identity -v -p codesigning 2>/dev/null | grep -q "Developer ID Application"; then
+    IDENTITY="Developer ID Application"
+else
+    IDENTITY="-"
+fi
 
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS"
 cp Info.plist "$APP/Contents/Info.plist"
-swiftc -O -target arm64-apple-macos14 LetMeTalk.swift -o "$APP/Contents/MacOS/LetMeTalk"
+swiftc -O -target "$(uname -m)-apple-macos14" LetMeTalk.swift -o "$APP/Contents/MacOS/LetMeTalk"
 codesign --force --options runtime --timestamp --sign "$IDENTITY" "$APP"
 codesign --verify --strict "$APP"
 echo "Built $APP"
