@@ -1,13 +1,5 @@
 #!/bin/sh
-# let-me-talk stays PRIVATE until it's deliberately open-sourced (then drop the visibility check).
 # Enabled per clone with: git config core.hooksPath .githooks
-url=$(git remote get-url "$1" 2>/dev/null || echo "$2")
-repo=$(printf '%s' "$url" | sed -E 's#(git@github.com:|https://github.com/)##; s#\.git$##')
-vis=$(gh repo view "$repo" --json visibility --jq .visibility 2>/dev/null)
-if [ "$vis" != "PRIVATE" ]; then
-  echo "pre-push: refusing — $repo visibility is '${vis:-unknown}', must be PRIVATE" >&2
-  exit 1
-fi
 
 # Every tracked file, plus the messages and authors of the commits being pushed.
 "$(dirname "$0")/privacy-gate" --tracked || exit 1

@@ -296,16 +296,9 @@ Enable the hooks once per clone:
   deliberate author credit.
 - The gate also refuses **machine types** (computer model and chip names; the full pattern is in
   `.githooks/privacy-gate`), so development notes don't describe the hardware they ran on.
-- **pre-push:** refuses unless GitHub reports the remote as `PRIVATE`. It re-runs the gate on all tracked files, and
-  rejects commits whose author or committer email isn't a noreply address, or whose message has a session link.
+- **pre-push:** re-runs the gate on all tracked files, and rejects commits whose author or committer email isn't a
+  noreply address, or whose message has a session link.
 - Commits use the GitHub noreply address (repo-local `user.email`).
-
-### Before open-sourcing
-
-- [ ] Remove the PRIVATE check from `.githooks/pre-push`.
-- [x] Add a license (MIT, see `LICENSE`).
-- [x] Use a neutral bundle ID (`app.letmetalk.LetMeTalk`).
-- [ ] Run `.githooks/privacy-gate --tracked` and review the full history (`git log -p`), not just the current tree.
 
 ---
 
