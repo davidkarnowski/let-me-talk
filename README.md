@@ -245,7 +245,7 @@ listen-only probes on a Mac using its built-in headphone jack.
 | `LetMeTalk.swift` | The entire app: remap, device watching, key picker, menu. |
 | `Info.plist` | Bundle metadata. `LSUIElement` = menu-bar only, no Dock icon. Bundle ID `app.letmetalk.LetMeTalk`. |
 | `build.sh` | `swiftc` → `.app` bundle → `codesign` (hardened runtime, timestamped). `--install` copies to `/Applications` and relaunches. |
-| `.githooks/` | Privacy gate (pre-commit), and a check that the remote repo is private (pre-push). |
+| `.githooks/` | Privacy gate (pre-commit), and the privacy gate plus noreply and session-link checks on everything pushed (pre-push). |
 
 ### Build and signing
 
